@@ -8,7 +8,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
+    "pretest": "dotenv -e .env.test -- prisma migrate deploy",
+    "test": "dotenv -e .env.test -- vitest run",
     "lint": "eslint src --max-warnings 0",
     "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
@@ -23,6 +24,8 @@
     "zod": "^4.4.0"
   },
   "devDependencies": {
+    "@types/node": "^22.20.0",
+    "dotenv-cli": "^11.0.0",
     "prisma": "^6.19.0",
     "tsx": "^4.22.0",
     "typescript": "^5.9.0",

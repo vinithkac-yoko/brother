@@ -7,7 +7,7 @@ export const createCustomerSchema = z.object({
   shippingAddress: z.string().min(1).optional(),
   notes: z.string().optional(),
 });
-export type CreateCustomerInput = z.infer<typeof createCustomerSchema>;
+export type CreateCustomerInput = z.input<typeof createCustomerSchema>;
 
 export const updateCustomerSchema = z.object({
   customerId: z.string().min(1),
@@ -17,7 +17,7 @@ export const updateCustomerSchema = z.object({
   shippingAddress: z.string().min(1).optional(),
   notes: z.string().optional(),
 });
-export type UpdateCustomerInput = z.infer<typeof updateCustomerSchema>;
+export type UpdateCustomerInput = z.input<typeof updateCustomerSchema>;
 
 export const addContactSchema = z.object({
   customerId: z.string().min(1),
@@ -27,4 +27,4 @@ export const addContactSchema = z.object({
   designation: z.string().min(1).optional(),
   isPrimary: z.boolean().default(false),
 });
-export type AddContactInput = z.infer<typeof addContactSchema>;
+export type AddContactInput = z.input<typeof addContactSchema>;

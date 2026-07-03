@@ -10,20 +10,20 @@ export const createDrawingChargeSchema = z.object({
   description: z.string().optional(),
   decidedBy: z.string().min(1),
 });
-export type CreateDrawingChargeInput = z.infer<typeof createDrawingChargeSchema>;
+export type CreateDrawingChargeInput = z.input<typeof createDrawingChargeSchema>;
 
 export const invoiceDrawingChargeSchema = z.object({
   drawingChargeId: z.string().min(1),
 });
-export type InvoiceDrawingChargeInput = z.infer<typeof invoiceDrawingChargeSchema>;
+export type InvoiceDrawingChargeInput = z.input<typeof invoiceDrawingChargeSchema>;
 
 export const markDrawingChargePaidSchema = z.object({
   drawingChargeId: z.string().min(1),
 });
-export type MarkDrawingChargePaidInput = z.infer<typeof markDrawingChargePaidSchema>;
+export type MarkDrawingChargePaidInput = z.input<typeof markDrawingChargePaidSchema>;
 
 export const waiveDrawingChargeSchema = z.object({
   drawingChargeId: z.string().min(1),
   notes: z.string().optional(),
 });
-export type WaiveDrawingChargeInput = z.infer<typeof waiveDrawingChargeSchema>;
+export type WaiveDrawingChargeInput = z.input<typeof waiveDrawingChargeSchema>;

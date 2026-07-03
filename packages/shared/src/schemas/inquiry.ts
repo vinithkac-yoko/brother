@@ -11,7 +11,7 @@ export const createInquirySchema = z.object({
   expectedDeliveryDate: z.coerce.date().optional(),
   notes: z.string().optional(),
 });
-export type CreateInquiryInput = z.infer<typeof createInquirySchema>;
+export type CreateInquiryInput = z.input<typeof createInquirySchema>;
 
 export const updateInquirySchema = z.object({
   inquiryId: z.string().min(1),
@@ -22,7 +22,7 @@ export const updateInquirySchema = z.object({
   expectedDeliveryDate: z.coerce.date().optional(),
   notes: z.string().optional(),
 });
-export type UpdateInquiryInput = z.infer<typeof updateInquirySchema>;
+export type UpdateInquiryInput = z.input<typeof updateInquirySchema>;
 
 export const markInquiryLostSchema = z
   .object({
@@ -34,4 +34,4 @@ export const markInquiryLostSchema = z
     message: "lostReasonNotes is required when lostReason is OTHER",
     path: ["lostReasonNotes"],
   });
-export type MarkInquiryLostInput = z.infer<typeof markInquiryLostSchema>;
+export type MarkInquiryLostInput = z.input<typeof markInquiryLostSchema>;

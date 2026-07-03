@@ -11,4 +11,4 @@ export const recordCustomerPOSchema = z.object({
   notes: z.string().optional(),
   partName: z.string().min(1).optional(),
 });
-export type RecordCustomerPOInput = z.infer<typeof recordCustomerPOSchema>;
+export type RecordCustomerPOInput = z.input<typeof recordCustomerPOSchema>;

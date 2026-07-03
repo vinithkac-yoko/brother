@@ -11,7 +11,7 @@ export const quoteLineItemInputSchema = z.object({
   unit: z.string().min(1),
   ratePaise: z.number().int().nonnegative(),
 });
-export type QuoteLineItemInput = z.infer<typeof quoteLineItemInputSchema>;
+export type QuoteLineItemInput = z.input<typeof quoteLineItemInputSchema>;
 
 export const buildQuoteSchema = z.object({
   inquiryId: z.string().min(1),
@@ -19,7 +19,7 @@ export const buildQuoteSchema = z.object({
   deliveryBasisNotes: z.string().min(1),
   preparedBy: z.string().min(1).optional(),
 });
-export type BuildQuoteInput = z.infer<typeof buildQuoteSchema>;
+export type BuildQuoteInput = z.input<typeof buildQuoteSchema>;
 
 export const reviseQuoteSchema = z.object({
   previousQuoteId: z.string().min(1),
@@ -27,4 +27,4 @@ export const reviseQuoteSchema = z.object({
   deliveryBasisNotes: z.string().min(1),
   preparedBy: z.string().min(1).optional(),
 });
-export type ReviseQuoteInput = z.infer<typeof reviseQuoteSchema>;
+export type ReviseQuoteInput = z.input<typeof reviseQuoteSchema>;

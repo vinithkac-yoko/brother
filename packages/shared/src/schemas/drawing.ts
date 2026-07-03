@@ -7,7 +7,7 @@ export const attachDrawingSchema = z.object({
   fileType: drawingFileTypeSchema,
   source: drawingSourceSchema.default("CUSTOMER_SUPPLIED"),
 });
-export type AttachDrawingInput = z.infer<typeof attachDrawingSchema>;
+export type AttachDrawingInput = z.input<typeof attachDrawingSchema>;
 
 export const reviewDrawingSchema = z.object({
   drawingId: z.string().min(1),
@@ -15,4 +15,4 @@ export const reviewDrawingSchema = z.object({
   flags: z.array(z.string().min(1)).default([]),
   reviewedBy: z.string().min(1),
 });
-export type ReviewDrawingInput = z.infer<typeof reviewDrawingSchema>;
+export type ReviewDrawingInput = z.input<typeof reviewDrawingSchema>;

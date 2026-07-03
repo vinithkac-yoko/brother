@@ -40,35 +40,53 @@ repo. Not yet feature-complete.
 - [x] Committed and pushed to `claude/erp-agent-setup-1m2uz9`, which is now
       the repo's default branch (repo was empty before this session — no
       separate base branch exists yet to open a PR against).
+- [x] Made the app Railway-deployable: `railway.json`, `$PORT`-aware start
+      script, `prisma migrate deploy` wired into `pnpm start`, `postinstall`
+      Prisma-generate hook. Verified `pnpm run build` + `pnpm run start`
+      both succeed end-to-end locally. Actual Railway project setup
+      (GitHub connection, Postgres plugin, env vars) still needs Kasi's own
+      Railway login — not done yet.
+- [x] **Layer 5** (`packages/shared`): enums mirroring every Prisma enum,
+      an `Actor` type (USER/AGENT), one zod input schema per service
+      capability, and the fixed 6-type `Artifact` discriminated union.
+      7 passing vitest tests.
+- [x] **Layer 1** (`packages/core`): full service layer — customer/contact,
+      inquiry (incl. lost-reason), drawing (incl. source), DrawingCharge
+      (create/invoice/mark-paid/waive), feasibility (create/complete),
+      quote (build/revise with real versioning), customerPO (spins up the
+      Job spine + requires a Drawing to exist first), payment (record +
+      the advance-confirmation production gate), and the 2 Phase 1 reports.
+      Every service: zod validate → `requireRole` permission check →
+      transaction → `AuditEvent` write. 44 passing integration tests
+      against a real Postgres test DB (`fab_erp_test`, truncate-between-
+      tests, not mocked) — includes a dedicated test proving
+      `confirmPayment` is the *only* thing that flips `Job.status` to
+      `PRODUCTION_ELIGIBLE`, only for ADVANCE payments, only once, only
+      for ADMIN actors.
+- [x] Seed script (`packages/core/prisma/seed.ts`) run against the dev DB:
+      ClientConfig, 2 vendors, 7 materials, 3 customers, and 4 inquiries
+      at NEW / FEASIBILITY / QUOTED / WON+PRODUCTION_ELIGIBLE — built
+      through the real services (not raw `prisma.create`), so seed data
+      carries a real 26-row AuditEvent trail. Re-runnable any time the dev
+      DB is reset.
 
 ## Next (in order)
 
-1. `prisma migrate dev` — first migration. Needs a reachable `DATABASE_URL`
-   (see Known issues).
-2. Seed script (`packages/core/prisma/seed.ts`): `ClientConfig` (sample INR
-   rates from CUSTOMIZE.md), 3 customers, 2 vendors, materials (MS/SS sheets
-   in common thicknesses + tube sections), 4 inquiries spanning different
-   lifecycle stages.
-3. `packages/shared`: zod schemas for service inputs, enums re-exported from
-   Prisma-adjacent types, artifact discriminated union.
-4. Core services (with tests) in this order: customer/inquiry CRUD → drawing
-   attach/review (incl. `source` = customer-supplied vs shop-drawn) →
-   drawing-charge create/invoice/mark-paid (independent of feasibility
-   outcome) → feasibility create/complete → quote build (line items + GST +
-   totals, versioning) → customer PO record → payment record +
-   advance-confirmation gate (must flip Job to `PRODUCTION_ELIGIBLE`) → 2
-   reports (open-inquiries pipeline, quotes-expiring-within-N-days).
-5. Tool layer: 6 tools wrapping the above + `PreToolUse` hooks + threshold
-   logic (₹0 default — everything monetary needs approval, incl.
-   `DrawingCharge`).
-6. Agent runtime (single agent) + 4 skills (inquiry-intake, feasibility,
+1. Tool layer (`packages/tools`): the 6 tools wrapping the Layer 1 services
+   above + `PreToolUse` hooks + threshold logic (₹0 default — everything
+   monetary needs approval, incl. `DrawingCharge`). This is the layer that
+   enforces "propose_transaction → Approval → execute_approved" — core
+   services themselves don't know about Approval at all yet (by design:
+   they just perform the write once called; the *gate* on calling them is
+   a tool-layer concern).
+2. Agent runtime (single agent) + 4 skills (inquiry-intake, feasibility,
    quotation, followups) with carefully written trigger descriptions.
    inquiry-intake skill needs to cover the customer-supplied-vs-shop-drawn
    branch explicitly.
-7. Next.js UI: chat pane (streaming), approval inbox, inquiry pipeline list,
+3. Next.js UI: chat pane (streaming), approval inbox, inquiry pipeline list,
    artifact renderers (approval_card, quote_card, feasibility_checklist,
    message_draft, report_view).
-8. 6 golden-task evals — consider adding a 7th covering the infeasible-but-
+4. 6 golden-task evals — consider adding a 7th covering the infeasible-but-
    still-charged-for-the-drawing path, since it's a real edge case product
    flow, not just Phase 1 core scope.
 
@@ -79,7 +97,9 @@ repo. Not yet feature-complete.
   the way a hosted DB would; run `sudo service postgresql start` at the top
   of a fresh session before touching the DB. `packages/core/.env` is a
   symlink to the root `.env` (Prisma resolves `.env` relative to its own
-  cwd, not the repo root — see the comment in `.env.example`).
+  cwd, not the repo root — see the comment in `.env.example`). Same story
+  for a second DB, `fab_erp_test` (role `fab_erp` also owns it), used by
+  `pnpm --filter @fab-erp/core test` — see `packages/core/.env.test`.
 - Production hosting target is **Railway** (see "Deploying to Railway"
   below) — chosen by Kasi mid-session, not evaluated against alternatives.
   Not yet actually deployed there; repo-side config (`railway.json`,
@@ -119,6 +139,27 @@ Product-shaping decisions confirmed with Kasi (session 1):
 Ambiguous (non-product-shaping) decisions made solo and logged here per
 harness rule 4:
 
+- **Every `...Input`/`...Params` type alias in `packages/shared` uses
+  `z.input<typeof schema>`, not `z.infer`/`z.output`.** Any schema with a
+  `.default()` (e.g. `Drawing.source`, `isPrimary`, `missingInfo`) has an
+  output type where that field is required — fine for what `schema.parse()`
+  *returns*, wrong for what a caller should have to *supply*. Service
+  function parameters are typed with the input variant so callers can
+  still omit fields with sane defaults; the internal `schema.parse(input)`
+  call still produces the fully-defaulted output object. `FeasibilityChecklist`
+  is the one exception (`z.infer`) since it describes a stored/output shape,
+  not something a caller constructs.
+- **DrawingCharge stays entirely decoupled from Approval in the service
+  layer.** `packages/core` services have no notion of `Approval` at all —
+  they just perform the write when called. The propose/approve/execute
+  gate is entirely a `packages/tools` (Layer 2) concern, next up. This
+  keeps core services simple and directly testable (see the 44 integration
+  tests) without needing to fake an approval workflow in every test.
+- **Integration tests hit a real Postgres test DB (`fab_erp_test`), not
+  mocks.** These services are thin transaction wrappers around real
+  queries — a mocked Prisma client would mostly just re-assert the mock.
+  Tests truncate all tables in `beforeEach` and run with
+  `fileParallelism: false` (shared DB state can't parallelize safely).
 - **JobCard is not a Prisma model.** It's a read-only view assembled by a
   core service from Job + ProcessRoute + RouteStage + StageUpdate + notes,
   per the spec's own wording ("JobCard view assembled from..."). Avoids a
@@ -168,9 +209,12 @@ pnpm install                    # also runs `prisma generate` (packages/core pos
 cp .env.example .env             # then fill in DATABASE_URL / ANTHROPIC_API_KEY
 ln -sf ../../.env packages/core/.env   # Prisma needs .env next to where it's invoked from
 pnpm db:migrate                  # first time / after schema changes — creates a shadow DB
-pnpm db:seed                     # not written yet (task: "Prisma migrations + seed data")
+pnpm db:seed                     # ClientConfig + 2 vendors + 7 materials + 3 customers + 4 inquiries
 pnpm dev                          # starts apps/web + watches packages, http://localhost:3000
-pnpm test                         # all vitest suites (none exist yet)
+
+# Tests (packages/core only, so far — real Postgres, not mocked):
+createdb -O fab_erp fab_erp_test   # one-time, plus GRANT — see packages/core/.env.test for the URL
+pnpm --filter @fab-erp/core test    # pretest applies migrations, then 44 integration tests run
 ```
 
 ### Deploying to Railway

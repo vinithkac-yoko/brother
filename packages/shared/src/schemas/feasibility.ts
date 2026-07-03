@@ -18,7 +18,7 @@ export const createFeasibilityCheckSchema = z.object({
   inquiryId: z.string().min(1),
   checklist: feasibilityChecklistSchema,
 });
-export type CreateFeasibilityCheckInput = z.infer<typeof createFeasibilityCheckSchema>;
+export type CreateFeasibilityCheckInput = z.input<typeof createFeasibilityCheckSchema>;
 
 export const completeFeasibilityCheckSchema = z.object({
   feasibilityCheckId: z.string().min(1),
@@ -29,4 +29,4 @@ export const completeFeasibilityCheckSchema = z.object({
   outsourcingNotes: z.string().optional(),
   completedBy: z.string().min(1),
 });
-export type CompleteFeasibilityCheckInput = z.infer<typeof completeFeasibilityCheckSchema>;
+export type CompleteFeasibilityCheckInput = z.input<typeof completeFeasibilityCheckSchema>;
