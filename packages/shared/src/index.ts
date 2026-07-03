@@ -1,7 +1,16 @@
 // Layer 5/6 groundwork: zod schemas, enums, and artifact discriminated-union
 // types shared between core, tools, agent, and web. No runtime deps on
 // core/tools/agent — this package must stay a leaf.
-//
-// Populated in the "Shared artifact types" milestone (see claude-progress.md).
 
-export const FAB_ERP_SHARED_VERSION = "0.1.0";
+export * from "./enums.js";
+export * from "./actor.js";
+export * from "./artifacts.js";
+export * from "./schemas/customer.js";
+export * from "./schemas/inquiry.js";
+export * from "./schemas/drawing.js";
+export * from "./schemas/drawingCharge.js";
+export * from "./schemas/feasibility.js";
+export * from "./schemas/quote.js";
+export * from "./schemas/customerPO.js";
+export * from "./schemas/payment.js";
+export * from "./schemas/reports.js";
