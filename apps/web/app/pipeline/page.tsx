@@ -1,5 +1,10 @@
 import { openInquiriesPipeline, quotesExpiringWithinDays, prisma } from "@fab-erp/core";
 
+// Reads live DB state on every request — must not be statically
+// prerendered at build time (Railway's build phase may not have DB
+// access yet, and the data would go stale immediately anyway).
+export const dynamic = "force-dynamic";
+
 function paise(n: number) {
   return `₹${(n / 100).toLocaleString("en-IN")}`;
 }

@@ -1,6 +1,9 @@
 import { prisma } from "@fab-erp/core";
 import { approveAction, rejectAction } from "./actions";
 
+// Same reasoning as /pipeline — live DB state, never statically prerendered.
+export const dynamic = "force-dynamic";
+
 function formatPaiseFromPayload(payload: unknown): string | null {
   if (!payload || typeof payload !== "object") return null;
   const p = payload as Record<string, unknown>;
