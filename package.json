@@ -1,0 +1,25 @@
+{
+  "name": "fab-erp-template",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Agent-native ERP template for custom metal fabrication job shops",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "db:generate": "pnpm --filter @fab-erp/core prisma:generate",
+    "db:migrate": "pnpm --filter @fab-erp/core prisma:migrate",
+    "db:seed": "pnpm --filter @fab-erp/core prisma:seed",
+    "db:studio": "pnpm --filter @fab-erp/core prisma:studio"
+  },
+  "devDependencies": {
+    "turbo": "^2.10.0",
+    "typescript": "^5.9.0"
+  }
+}

@@ -1,0 +1,16 @@
+node_modules/
+.pnpm-store/
+dist/
+build/
+.next/
+.turbo/
+*.tsbuildinfo
+.env
+.env.local
+.env.*.local
+.DS_Store
+npm-debug.log*
+pnpm-debug.log*
+coverage/
+.vscode/
+!.vscode/extensions.json
