@@ -59,6 +59,22 @@ configured here.
 | Powder coating | per sq. meter | 180 | No (or Yes if client outsources — set flag) |
 | Packing | per job (flat) | 500 | No |
 
+### 4a. CAD Drawing Charges
+
+Not every customer supplies a drawing — many only describe a requirement,
+and the shop's own engineers draw the CAD (`Drawing.source = SHOP_DRAWN`).
+That drawing work is billable **whether or not the part turns out feasible
+to manufacture** — recorded as a `DrawingCharge`, deliberately separate
+from `Quote`/`QuoteLineItem` so it isn't gated on a production quote
+existing.
+
+Unlike the rate-card processes above, there is **no fixed formula** for
+this charge — the amount is a per-job judgment call made by the
+owner/engineer when the drawing is created or invoiced (`DrawingCharge.amountPaise`,
+`decidedBy`). If this client wants a fixed or tiered rate instead, add it
+to the table above and update the drawing-creation service accordingly —
+until then, do not hardcode a rate in code for this line.
+
 ## 5. Process Route / Production Stages
 
 Default ordered stage list (subset chosen per job in its `ProcessRoute`):

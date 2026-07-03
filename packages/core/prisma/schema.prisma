@@ -60,6 +60,21 @@ enum DrawingFileType {
   CYPCUT
 }
 
+// Some customers hand over a finished drawing; others only describe a
+// requirement and the shop's own engineers draw the CAD. That distinction
+// is what makes a DrawingCharge applicable.
+enum DrawingSource {
+  CUSTOMER_SUPPLIED
+  SHOP_DRAWN
+}
+
+enum DrawingChargeStatus {
+  PENDING
+  INVOICED
+  PAID
+  WAIVED
+}
+
 enum RiskLevel {
   LOW
   MEDIUM
@@ -272,6 +287,7 @@ model Inquiry {
   customer          Customer           @relation(fields: [customerId], references: [id])
   contact           Contact?           @relation(fields: [contactId], references: [id])
   drawings          Drawing[]
+  drawingCharges    DrawingCharge[]
   feasibilityChecks FeasibilityCheck[]
   quotes            Quote[]
   job               Job?
@@ -285,6 +301,10 @@ model Drawing {
   inquiryId   String
   fileRef     String
   fileType    DrawingFileType
+  // Whether the customer supplied this drawing or the shop drew the CAD
+  // in-house from a bare requirement description. SHOP_DRAWN is what makes
+  // a DrawingCharge applicable.
+  source      DrawingSource   @default(CUSTOMER_SUPPLIED)
   version     Int             @default(1)
   reviewNotes String?
   // Missing-info / attention flags, e.g. "missing powder coat color", "no tolerance spec"
@@ -295,9 +315,40 @@ model Drawing {
   updatedAt   DateTime        @updatedAt
   deletedAt   DateTime?
 
-  inquiry Inquiry @relation(fields: [inquiryId], references: [id])
+  inquiry        Inquiry         @relation(fields: [inquiryId], references: [id])
+  drawingCharges DrawingCharge[]
 
   @@index([inquiryId])
+}
+
+// A charge for CAD/drawing creation work the shop performed itself
+// (Drawing.source = SHOP_DRAWN). Deliberately separate from Quote/
+// QuoteLineItem: it applies whether or not the underlying part turns out
+// feasible to manufacture, so it cannot be gated on a production Quote
+// existing. The amount is set by a human (owner/engineer judgment call per
+// job) rather than computed from a rate-card formula, unlike other
+// QuoteLineItem processes.
+model DrawingCharge {
+  id          String              @id @default(cuid())
+  inquiryId   String
+  drawingId   String?
+  amountPaise Int
+  status      DrawingChargeStatus @default(PENDING)
+  description String?
+  decidedBy   String?
+  invoicedAt  DateTime?
+  paidAt      DateTime?
+  notes       String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  deletedAt   DateTime?
+
+  inquiry Inquiry  @relation(fields: [inquiryId], references: [id])
+  drawing Drawing? @relation(fields: [drawingId], references: [id])
+
+  @@index([inquiryId])
+  @@index([drawingId])
+  @@index([status])
 }
 
 // ─────────────────────────────────────────────────────────────────────────
