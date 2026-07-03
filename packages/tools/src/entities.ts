@@ -16,11 +16,18 @@ export const SEARCHABLE_ENTITIES = [
   "Payment",
   "Job",
   "Approval",
+  "ClientConfig",
 ] as const;
 export type SearchableEntity = (typeof SEARCHABLE_ENTITIES)[number];
 
 export function isSearchableEntity(value: string): value is SearchableEntity {
   return (SEARCHABLE_ENTITIES as readonly string[]).includes(value);
+}
+
+// ClientConfig is a singleton settings row, not a soft-deletable business
+// record — it has no `deletedAt` column, unlike everything else here.
+export function hasSoftDelete(entity: SearchableEntity): boolean {
+  return entity !== "ClientConfig";
 }
 
 // Prisma delegate accessor, keyed by entity name.
@@ -36,6 +43,7 @@ export function delegateFor(entity: SearchableEntity) {
     Payment: prisma.payment,
     Job: prisma.job,
     Approval: prisma.approval,
+    ClientConfig: prisma.clientConfig,
   };
   return map[entity] as {
     findMany: (args: Record<string, unknown>) => Promise<unknown[]>;

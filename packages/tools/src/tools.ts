@@ -19,6 +19,7 @@ import {
   PAGE_SIZE_DEFAULT,
   PAGE_SIZE_MAX,
   delegateFor,
+  hasSoftDelete,
   isSearchableEntity,
   relatedSummaryInclude,
 } from "./entities";
@@ -116,7 +117,7 @@ Example: { entity: "Inquiry", filters: { status: "NEW" }, page: 1, pageSize: 20 
         return errorResult(`entity "${entity}" is not searchable; use one of: ${SEARCHABLE_ENTITIES.join(", ")}`);
       }
       const delegate = delegateFor(entity);
-      const where = { deletedAt: null, ...(filters ?? {}) };
+      const where = { ...(hasSoftDelete(entity) ? { deletedAt: null } : {}), ...(filters ?? {}) };
       const [total, rows] = await Promise.all([
         delegate.count({ where }),
         delegate.findMany({
