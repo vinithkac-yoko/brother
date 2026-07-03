@@ -10,11 +10,13 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "start": "pnpm --filter @fab-erp/core prisma:deploy && pnpm --filter web start",
     "test": "turbo run test",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "db:generate": "pnpm --filter @fab-erp/core prisma:generate",
     "db:migrate": "pnpm --filter @fab-erp/core prisma:migrate",
+    "db:deploy": "pnpm --filter @fab-erp/core prisma:deploy",
     "db:seed": "pnpm --filter @fab-erp/core prisma:seed",
     "db:studio": "pnpm --filter @fab-erp/core prisma:studio"
   },

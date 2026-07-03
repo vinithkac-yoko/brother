@@ -105,18 +105,31 @@ Discriminated union, Phase 1 renders all of: `approval_card`, `quote_card`,
 ## Commands
 
 ```bash
-pnpm install                 # install all workspace deps
-pnpm db:migrate               # run Prisma migrations (packages/core)
+pnpm install                 # install all workspace deps (runs `prisma generate` via postinstall)
+pnpm db:migrate               # dev migration (creates a shadow DB) — local only
+pnpm db:deploy                 # apply pending migrations, no shadow DB — what Railway runs on deploy
 pnpm db:seed                  # seed ClientConfig + sample data
 pnpm db:studio                # Prisma Studio
 pnpm dev                      # turbo dev across packages/apps
-pnpm build                    # turbo build
+pnpm build                    # turbo build (what Railway's build step runs)
+pnpm start                     # db:deploy, then boot apps/web — what Railway's deploy step runs
 pnpm test                     # turbo test (vitest per package)
 pnpm typecheck                 # turbo typecheck
 pnpm lint                     # turbo lint
 ```
 
 Per-package: `pnpm --filter @fab-erp/core test`, etc.
+
+### Deployment (Railway)
+
+`railway.json` at the repo root is the config-as-code Railway reads. Root
+Directory in the Railway service stays `/` (repo root) — do **not** point
+it at `apps/web`, or pnpm workspace resolution breaks. One Railway service
+is enough for Phase 1: the agent runs in-process inside the Next.js app,
+there's no separate worker/agent server yet. `pnpm start` runs
+`prisma migrate deploy` before booting, so schema changes ship automatically
+on every deploy — no manual migration step. See `claude-progress.md` for
+the one-time dashboard setup (Postgres plugin, env vars, domain).
 
 ## Conventions
 

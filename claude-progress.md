@@ -74,10 +74,20 @@ repo. Not yet feature-complete.
 
 ## Known issues
 
-- No DB is provisioned yet in this environment — migrations will need a
-  reachable `DATABASE_URL` (Postgres). Confirm how this sandboxed
-  environment provides one (local Postgres container? external?) in the
-  next session if not already resolved.
+- This sandbox's local Postgres (16, provisioned this session — role
+  `fab_erp` / db `fab_erp`) does **not** persist across container restarts
+  the way a hosted DB would; run `sudo service postgresql start` at the top
+  of a fresh session before touching the DB. `packages/core/.env` is a
+  symlink to the root `.env` (Prisma resolves `.env` relative to its own
+  cwd, not the repo root — see the comment in `.env.example`).
+- Production hosting target is **Railway** (see "Deploying to Railway"
+  below) — chosen by Kasi mid-session, not evaluated against alternatives.
+  Not yet actually deployed there; repo-side config (`railway.json`,
+  `$PORT`-aware start script, `prisma migrate deploy` wired into
+  `pnpm start`) is done and verified locally (`pnpm run build` +
+  `pnpm run start` both succeed against local Postgres), but the Railway
+  project itself (GitHub connection, Postgres plugin, env vars, domain)
+  requires Kasi's own Railway login — I can't do that from this sandbox.
 
 ## Decisions
 
@@ -148,15 +158,44 @@ harness rule 4:
   (not 6.0 — too recently released to trust broad tooling/plugin support
   yet, e.g. `@typescript-eslint`), Turborepo 2.10, Vitest 4.1.
 
-## How to run everything (fill in as pieces land)
+## How to run everything
+
+### Local dev
 
 ```bash
-pnpm install
-cp .env.example .env   # set DATABASE_URL — see "Known issues" above
-pnpm db:migrate
-pnpm db:seed
-pnpm dev                # starts apps/web + watches packages
-pnpm test                # all vitest suites
+sudo service postgresql start   # this sandbox only — skip on a machine where it's already running
+pnpm install                    # also runs `prisma generate` (packages/core postinstall)
+cp .env.example .env             # then fill in DATABASE_URL / ANTHROPIC_API_KEY
+ln -sf ../../.env packages/core/.env   # Prisma needs .env next to where it's invoked from
+pnpm db:migrate                  # first time / after schema changes — creates a shadow DB
+pnpm db:seed                     # not written yet (task: "Prisma migrations + seed data")
+pnpm dev                          # starts apps/web + watches packages, http://localhost:3000
+pnpm test                         # all vitest suites (none exist yet)
 ```
 
-`.env.example` not yet created — add alongside first migration.
+### Deploying to Railway
+
+One-time setup, done in the Railway dashboard (needs Kasi's Railway
+account — not something I can do from this sandbox):
+
+1. New Project → Deploy from GitHub repo → pick this repo.
+2. Leave **Root Directory** as `/` (repo root) — pnpm workspaces need the
+   full monorepo, not just `apps/web`. `railway.json` at the repo root
+   already tells Railway the build/start commands; no manual override
+   needed unless you want to change them.
+3. Add a **Postgres** plugin to the project (Railway's own template, not a
+   manually-entered connection string).
+4. On the web service → Variables: add a **reference** to the Postgres
+   plugin's `DATABASE_URL` (not a copy-pasted value — a reference stays in
+   sync if Railway ever rotates it). Add `ANTHROPIC_API_KEY` by hand.
+5. Generate a public domain under Settings → Networking, once you want the
+   app reachable outside Railway's internal network.
+
+After that, every push to this branch triggers: `pnpm install` (+ Prisma
+client generation) → `pnpm run build` (turbo build across all packages) →
+`pnpm run start` (`prisma migrate deploy` against the live DB, then
+`next start -p $PORT`). No manual migration step on deploy.
+
+`pnpm run build` and `pnpm run start` were both run locally this session
+against the sandbox's Postgres to confirm the exact commands Railway will
+run actually work end to end before wiring up the dashboard side.
