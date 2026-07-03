@@ -11,7 +11,7 @@ import {
   quoteProcessSchema,
   quoteStatusSchema,
   riskLevelSchema,
-} from "./enums.js";
+} from "./enums";
 
 export const approvalCardArtifactSchema = z.object({
   type: z.literal("approval_card"),

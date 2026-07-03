@@ -1,4 +1,4 @@
-import { prisma } from "./prisma.js";
+import { prisma } from "./prisma";
 
 // Integration tests hit real Postgres (fab_erp_test). Truncate everything
 // except the migrations table between tests rather than mocking Prisma —

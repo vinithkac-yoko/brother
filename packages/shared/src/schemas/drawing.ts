@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { drawingFileTypeSchema, drawingSourceSchema } from "../enums.js";
+import { drawingFileTypeSchema, drawingSourceSchema } from "../enums";
 
 export const attachDrawingSchema = z.object({
   inquiryId: z.string().min(1),

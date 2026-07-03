@@ -2,15 +2,17 @@
 // types shared between core, tools, agent, and web. No runtime deps on
 // core/tools/agent — this package must stay a leaf.
 
-export * from "./enums.js";
-export * from "./actor.js";
-export * from "./artifacts.js";
-export * from "./schemas/customer.js";
-export * from "./schemas/inquiry.js";
-export * from "./schemas/drawing.js";
-export * from "./schemas/drawingCharge.js";
-export * from "./schemas/feasibility.js";
-export * from "./schemas/quote.js";
-export * from "./schemas/customerPO.js";
-export * from "./schemas/payment.js";
-export * from "./schemas/reports.js";
+export * from "./enums";
+export * from "./actor";
+export * from "./artifacts";
+export * from "./schemas/customer";
+export * from "./schemas/inquiry";
+export * from "./schemas/drawing";
+export * from "./schemas/drawingCharge";
+export * from "./schemas/feasibility";
+export * from "./schemas/quote";
+export * from "./schemas/customerPO";
+export * from "./schemas/payment";
+export * from "./schemas/reports";
+export * from "./schemas/messageDraft";
+export * from "./schemas/approval";

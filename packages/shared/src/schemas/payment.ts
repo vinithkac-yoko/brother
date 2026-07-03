@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { paymentTypeSchema } from "../enums.js";
+import { paymentTypeSchema } from "../enums";
 
 export const recordPaymentSchema = z.object({
   customerPOId: z.string().min(1),

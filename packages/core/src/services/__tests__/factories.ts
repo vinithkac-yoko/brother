@@ -1,5 +1,5 @@
 import type { Actor } from "@fab-erp/shared";
-import { prisma } from "../../lib/prisma.js";
+import { prisma } from "../../lib/prisma";
 
 export const adminActor: Actor = { type: "USER", userId: "test-admin", role: "ADMIN" };
 export const engineerActor: Actor = { type: "USER", userId: "test-engineer", role: "ENGINEER" };

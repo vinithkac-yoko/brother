@@ -1,9 +1,9 @@
 import type { Actor, AttachDrawingInput, ReviewDrawingInput } from "@fab-erp/shared";
 import { attachDrawingSchema, reviewDrawingSchema } from "@fab-erp/shared";
-import { prisma } from "../lib/prisma.js";
-import { writeAuditEvent } from "../lib/audit.js";
-import { requireRole } from "../lib/actor.js";
-import { NotFoundError } from "../lib/errors.js";
+import { prisma } from "../lib/prisma";
+import { writeAuditEvent } from "../lib/audit";
+import { requireRole } from "../lib/actor";
+import { NotFoundError } from "../lib/errors";
 
 export async function attachDrawing(actor: Actor, input: AttachDrawingInput) {
   requireRole(actor, ["ADMIN", "ENGINEER"]);

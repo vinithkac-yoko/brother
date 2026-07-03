@@ -3,7 +3,7 @@
 // entirely from having gone through propose_transaction -> Approval ->
 // execute_approved, enforced at the tool layer, not here).
 import { z } from "zod";
-import { roleSchema } from "./enums.js";
+import { roleSchema } from "./enums";
 
 export const actorSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("USER"), userId: z.string().min(1), role: roleSchema }),

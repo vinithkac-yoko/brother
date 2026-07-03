@@ -8,16 +8,19 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
+    "test": "dotenv -e .env.test -- vitest run",
     "lint": "eslint src --max-warnings 0"
   },
   "dependencies": {
     "@fab-erp/core": "workspace:*",
     "@fab-erp/shared": "workspace:*",
     "@anthropic-ai/claude-agent-sdk": "^0.3.199",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@prisma/client": "^6.19.0",
     "zod": "^4.4.0"
   },
   "devDependencies": {
+    "dotenv-cli": "^11.0.0",
     "typescript": "^5.9.0",
     "vitest": "^4.1.0"
   }

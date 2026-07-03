@@ -1,5 +1,5 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
-import { NotFoundError } from "./errors.js";
+import { NotFoundError } from "./errors";
 
 type Tx = PrismaClient | Prisma.TransactionClient;
 

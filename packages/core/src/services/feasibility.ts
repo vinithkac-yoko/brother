@@ -4,10 +4,10 @@ import type {
   CreateFeasibilityCheckInput,
 } from "@fab-erp/shared";
 import { completeFeasibilityCheckSchema, createFeasibilityCheckSchema } from "@fab-erp/shared";
-import { prisma } from "../lib/prisma.js";
-import { writeAuditEvent } from "../lib/audit.js";
-import { requireRole } from "../lib/actor.js";
-import { BusinessRuleError, NotFoundError } from "../lib/errors.js";
+import { prisma } from "../lib/prisma";
+import { writeAuditEvent } from "../lib/audit";
+import { requireRole } from "../lib/actor";
+import { BusinessRuleError, NotFoundError } from "../lib/errors";
 
 export async function createFeasibilityCheck(actor: Actor, input: CreateFeasibilityCheckInput) {
   requireRole(actor, ["ADMIN", "ENGINEER"]);

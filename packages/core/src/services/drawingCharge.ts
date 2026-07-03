@@ -11,10 +11,10 @@ import {
   markDrawingChargePaidSchema,
   waiveDrawingChargeSchema,
 } from "@fab-erp/shared";
-import { prisma } from "../lib/prisma.js";
-import { writeAuditEvent } from "../lib/audit.js";
-import { requireRole } from "../lib/actor.js";
-import { BusinessRuleError, NotFoundError } from "../lib/errors.js";
+import { prisma } from "../lib/prisma";
+import { writeAuditEvent } from "../lib/audit";
+import { requireRole } from "../lib/actor";
+import { BusinessRuleError, NotFoundError } from "../lib/errors";
 
 // See CUSTOMIZE.md §4a / claude-progress.md Decisions: this charge applies
 // whether or not the part is later found feasible to manufacture, and its

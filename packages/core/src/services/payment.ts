@@ -1,9 +1,9 @@
 import type { Actor, ConfirmPaymentInput, RecordPaymentInput } from "@fab-erp/shared";
 import { confirmPaymentSchema, recordPaymentSchema } from "@fab-erp/shared";
-import { prisma } from "../lib/prisma.js";
-import { writeAuditEvent } from "../lib/audit.js";
-import { requireRole } from "../lib/actor.js";
-import { BusinessRuleError, NotFoundError } from "../lib/errors.js";
+import { prisma } from "../lib/prisma";
+import { writeAuditEvent } from "../lib/audit";
+import { requireRole } from "../lib/actor";
+import { BusinessRuleError, NotFoundError } from "../lib/errors";
 
 export async function recordPayment(actor: Actor, input: RecordPaymentInput) {
   requireRole(actor, ["ADMIN", "ENGINEER"]);

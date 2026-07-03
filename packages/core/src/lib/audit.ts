@@ -1,6 +1,6 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
 import type { Actor } from "@fab-erp/shared";
-import { actorAuditFields } from "./actor.js";
+import { actorAuditFields } from "./actor";
 
 type Tx = PrismaClient | Prisma.TransactionClient;
 

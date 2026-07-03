@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { truncateAllTables } from "../../lib/testHelpers.js";
-import { createInquiry, markInquiryLost, updateInquiry } from "../inquiry.js";
-import { BusinessRuleError, NotFoundError } from "../../lib/errors.js";
-import { adminActor, createTestCustomer } from "./factories.js";
+import { truncateAllTables } from "../../lib/testHelpers";
+import { createInquiry, markInquiryLost, updateInquiry } from "../inquiry";
+import { BusinessRuleError, NotFoundError } from "../../lib/errors";
+import { adminActor, createTestCustomer } from "./factories";
 
 beforeEach(async () => {
   await truncateAllTables();

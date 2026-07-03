@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { truncateAllTables } from "../../lib/testHelpers.js";
+import { truncateAllTables } from "../../lib/testHelpers";
 import {
   createDrawingCharge,
   invoiceDrawingCharge,
   markDrawingChargePaid,
   waiveDrawingCharge,
-} from "../drawingCharge.js";
-import { createInquiry, markInquiryLost } from "../inquiry.js";
-import { BusinessRuleError } from "../../lib/errors.js";
-import { adminActor, createTestCustomer } from "./factories.js";
+} from "../drawingCharge";
+import { createInquiry, markInquiryLost } from "../inquiry";
+import { BusinessRuleError } from "../../lib/errors";
+import { adminActor, createTestCustomer } from "./factories";
 
 beforeEach(async () => {
   await truncateAllTables();

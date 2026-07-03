@@ -1,6 +1,6 @@
 import type { OpenInquiriesPipelineParams, QuotesExpiringParams } from "@fab-erp/shared";
 import { openInquiriesPipelineParamsSchema, quotesExpiringParamsSchema } from "@fab-erp/shared";
-import { prisma } from "../lib/prisma.js";
+import { prisma } from "../lib/prisma";
 
 export interface OpenInquiryRow {
   inquiryId: string;

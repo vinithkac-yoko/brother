@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeQuoteTotals } from "../quoteMath.js";
+import { computeQuoteTotals } from "../quoteMath";
 
 describe("computeQuoteTotals", () => {
   it("computes amountPaise per line item and totals with GST", () => {

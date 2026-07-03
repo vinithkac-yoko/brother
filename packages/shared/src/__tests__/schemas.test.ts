@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { artifactSchema } from "../artifacts.js";
-import { markInquiryLostSchema } from "../schemas/inquiry.js";
-import { buildQuoteSchema } from "../schemas/quote.js";
+import { artifactSchema } from "../artifacts";
+import { markInquiryLostSchema } from "../schemas/inquiry";
+import { buildQuoteSchema } from "../schemas/quote";
 
 describe("markInquiryLostSchema", () => {
   it("requires lostReasonNotes when lostReason is OTHER", () => {

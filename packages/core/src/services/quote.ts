@@ -1,12 +1,12 @@
 import type { Actor, BuildQuoteInput, ReviseQuoteInput } from "@fab-erp/shared";
 import { buildQuoteSchema, reviseQuoteSchema } from "@fab-erp/shared";
-import { prisma } from "../lib/prisma.js";
-import { writeAuditEvent } from "../lib/audit.js";
-import { requireRole } from "../lib/actor.js";
-import { generateQuoteNumber } from "../lib/ids.js";
-import { getClientConfig } from "../lib/clientConfig.js";
-import { computeQuoteTotals } from "../lib/quoteMath.js";
-import { BusinessRuleError, NotFoundError } from "../lib/errors.js";
+import { prisma } from "../lib/prisma";
+import { writeAuditEvent } from "../lib/audit";
+import { requireRole } from "../lib/actor";
+import { generateQuoteNumber } from "../lib/ids";
+import { getClientConfig } from "../lib/clientConfig";
+import { computeQuoteTotals } from "../lib/quoteMath";
+import { BusinessRuleError, NotFoundError } from "../lib/errors";
 
 export async function buildQuote(actor: Actor, input: BuildQuoteInput) {
   requireRole(actor, ["ADMIN", "ENGINEER"]);

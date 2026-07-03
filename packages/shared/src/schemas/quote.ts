@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { quoteProcessSchema } from "../enums.js";
+import { quoteProcessSchema } from "../enums";
 
 // amountPaise is deliberately NOT accepted as input — it's always
 // qty * ratePaise, computed server-side in the quote-build service. See

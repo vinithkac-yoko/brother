@@ -1,10 +1,10 @@
 import type { Actor, CreateInquiryInput, MarkInquiryLostInput, UpdateInquiryInput } from "@fab-erp/shared";
 import { createInquirySchema, markInquiryLostSchema, updateInquirySchema } from "@fab-erp/shared";
-import { prisma } from "../lib/prisma.js";
-import { writeAuditEvent } from "../lib/audit.js";
-import { requireRole } from "../lib/actor.js";
-import { generateInquiryNumber } from "../lib/ids.js";
-import { BusinessRuleError, NotFoundError } from "../lib/errors.js";
+import { prisma } from "../lib/prisma";
+import { writeAuditEvent } from "../lib/audit";
+import { requireRole } from "../lib/actor";
+import { generateInquiryNumber } from "../lib/ids";
+import { BusinessRuleError, NotFoundError } from "../lib/errors";
 
 export async function createInquiry(actor: Actor, input: CreateInquiryInput) {
   requireRole(actor, ["ADMIN", "ENGINEER"]);

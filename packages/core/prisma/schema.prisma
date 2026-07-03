@@ -722,6 +722,12 @@ model Approval {
   proposedById    String?
   decidedById     String?
   decidedAt       DateTime?
+  // Set once execute_approved has actually performed the write. Guards
+  // against double-execution (e.g. a double click in the approval inbox) —
+  // ApprovalStatus itself has no EXECUTED state, so this is the only
+  // record of "has this already run."
+  executedAt      DateTime?
+  executionResult Json?
   thresholdReason String?
   conversationId  String?
   createdAt       DateTime       @default(now())

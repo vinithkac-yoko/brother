@@ -1,10 +1,10 @@
 import type { Actor, RecordCustomerPOInput } from "@fab-erp/shared";
 import { recordCustomerPOSchema } from "@fab-erp/shared";
-import { prisma } from "../lib/prisma.js";
-import { writeAuditEvent } from "../lib/audit.js";
-import { requireRole } from "../lib/actor.js";
-import { generateJobNumber } from "../lib/ids.js";
-import { BusinessRuleError, NotFoundError } from "../lib/errors.js";
+import { prisma } from "../lib/prisma";
+import { writeAuditEvent } from "../lib/audit";
+import { requireRole } from "../lib/actor";
+import { generateJobNumber } from "../lib/ids";
+import { BusinessRuleError, NotFoundError } from "../lib/errors";
 
 // Records the customer's own PO against a quote, marks the quote ACCEPTED
 // and the inquiry WON, and spins up the Job spine entity (Job status starts

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { riskLevelSchema } from "../enums.js";
+import { riskLevelSchema } from "../enums";
 
 // Structured checklist stored as FeasibilityCheck.checklist (Json). Kept as
 // a named schema (not an inline z.record) so the feasibility skill and the

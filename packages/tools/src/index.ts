@@ -1,7 +1,8 @@
 // Layer 2: core services wrapped as Agent SDK custom tools, in-process
-// (not MCP). Exactly 6 tools: search_records, get_record, run_report,
-// propose_transaction, execute_approved, draft_message.
-//
-// Populated in the "Tool layer" milestone (see claude-progress.md).
+// (NOT MCP). 6 tools only.
 
-export const FAB_ERP_TOOLS_VERSION = "0.1.0";
+export { createErpToolServer, buildErpTools } from "./tools";
+export { preToolUseHook } from "./hooks";
+export { ACTIONS, isKnownAction } from "./actions";
+export type { ActionDefinition, ActionName } from "./actions";
+export { SEARCHABLE_ENTITIES, isSearchableEntity } from "./entities";

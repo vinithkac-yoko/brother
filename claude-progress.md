@@ -7,8 +7,10 @@ and after every milestone, per harness rules.
 
 ## Current phase
 
-**Phase 1 — Front office: Lead → Quote → PO → Advance.** Bootstrapping the
-repo. Not yet feature-complete.
+**Phase 1 — Front office: Lead → Quote → PO → Advance.** All 6 layers now
+exist end to end (schema → services → tools → agent → UI). Demo-ready for
+the pipeline/approvals views right now; the live agent chat needs a real
+`ANTHROPIC_API_KEY` to actually run (see Known issues) — not yet supplied.
 
 ## Done
 
@@ -69,28 +71,116 @@ repo. Not yet feature-complete.
       through the real services (not raw `prisma.create`), so seed data
       carries a real 26-row AuditEvent trail. Re-runnable any time the dev
       DB is reset.
+- [x] `Approval.executedAt` + `executionResult` added (small follow-up
+      migration) — `execute_approved` now refuses to double-run the same
+      Approval, a real correctness gap that wasn't caught until building
+      the tool layer.
+- [x] **Layer 2** (`packages/tools`): all 6 tools (`search_records`,
+      `get_record`, `run_report`, `propose_transaction`, `execute_approved`,
+      `draft_message`) as one in-process `createSdkMcpServer`. An action
+      registry (`actions.ts`) maps 18 named actions to core services, each
+      tagged `monetary: boolean` — monetary ones stay `PENDING` until a
+      human approves, non-monetary ones auto-approve but still require an
+      explicit `execute_approved` call. `PreToolUse` hook duplicates the
+      "Approval must be APPROVED and unexecuted" check one layer before
+      the tool body runs, per CLAUDE.md's defense-in-depth requirement.
+      `execute_approved` reshapes a few result types (Quote → `quote_card`,
+      FeasibilityCheck → `feasibility_checklist`, a job-bearing Payment
+      result → `job_card`) into the fixed artifact union; everything else
+      falls back to labeled raw JSON. 8 passing integration tests.
+- [x] **Layer 4** (`skills/`): real content written for all 4 Phase 1
+      skills (inquiry-intake, feasibility, quotation, followups) — no
+      longer stubs.
+- [x] **Layer 3** (`packages/agent`): thin system prompt
+      (`systemPrompt.ts`) with the 4 skills' procedural knowledge condensed
+      inline (see Known issues — true Skill-tool loading is deferred), and
+      `session.ts` wrapping `query()` with `permissionMode: 'dontAsk'`,
+      `tools: []` (all built-ins off, only the 6 ERP tools available), the
+      `PreToolUse` hook wired in, and `mcpServers: { erp: ... }`.
+      `runAgentTurn()` runs one turn to completion (not token-streamed —
+      see Known issues) and returns assembled text + tool calls +
+      artifacts.
+- [x] **apps/web**: three pages. `/` is a chat UI (`ChatPanel` +
+      `ArtifactCard` renderers for all 6 artifact types) calling
+      `POST /api/chat` (Node runtime — the SDK spawns a subprocess, can't
+      run on Edge). `/approvals` is a server-rendered inbox reading
+      `Approval` directly + two server actions (`approveAction`/
+      `rejectAction` → new core service `decideApproval`) — per CLAUDE.md,
+      this is the one write that legitimately bypasses the agent, since
+      it's the human-in-the-loop step itself. `/pipeline` reads the 2
+      reports + `Job` directly via core services (no agent needed) —
+      confirmed rendering real seeded data (INQ-0001..0003, JOB-0001
+      PRODUCTION_ELIGIBLE) end-to-end with **zero API key required**.
+- [x] Fixed a real bundler bug hit while verifying the above: every
+      internal relative import across `packages/{shared,core,tools,agent}`
+      used an explicit `.js` extension (correct for `tsc`'s "Bundler"
+      module resolution, which vitest/tsx also honor) — but Next's
+      Turbopack dev/build resolver does NOT do that `.js`→`.ts` mapping;
+      it's TypeScript-only, not a real bundler feature. All 4 packages'
+      typechecks stayed green throughout because `tsc` never saw the
+      problem — only `next dev` did, at runtime. Fixed by dropping the
+      `.js` suffix from every internal relative import (all 4 packages
+      resolve extensionless `.ts` imports fine: tsc Bundler mode, vitest,
+      tsx, and Next's bundler all agree on that). All 59 tests + full
+      typecheck reconfirmed green after the change.
 
 ## Next (in order)
 
-1. Tool layer (`packages/tools`): the 6 tools wrapping the Layer 1 services
-   above + `PreToolUse` hooks + threshold logic (₹0 default — everything
-   monetary needs approval, incl. `DrawingCharge`). This is the layer that
-   enforces "propose_transaction → Approval → execute_approved" — core
-   services themselves don't know about Approval at all yet (by design:
-   they just perform the write once called; the *gate* on calling them is
-   a tool-layer concern).
-2. Agent runtime (single agent) + 4 skills (inquiry-intake, feasibility,
-   quotation, followups) with carefully written trigger descriptions.
-   inquiry-intake skill needs to cover the customer-supplied-vs-shop-drawn
-   branch explicitly.
-3. Next.js UI: chat pane (streaming), approval inbox, inquiry pipeline list,
-   artifact renderers (approval_card, quote_card, feasibility_checklist,
-   message_draft, report_view).
-4. 6 golden-task evals — consider adding a 7th covering the infeasible-but-
+1. **Get a real `ANTHROPIC_API_KEY` into `.env`** — this is the one thing
+   blocking the live chat demo from actually running (everything else
+   works without it). See Known issues.
+2. Properly wire true Agent Skills loading (the `Skill` tool +
+   `skills` SDK option) instead of the condensed-into-system-prompt
+   simplification currently in place — needs verifying the SDK's project
+   skill-discovery path and reconciling it with `tools: []`.
+3. 6 golden-task evals — consider adding a 7th covering the infeasible-but-
    still-charged-for-the-drawing path, since it's a real edge case product
    flow, not just Phase 1 core scope.
+4. Chat UX: currently one non-streamed response per turn (see Known
+   issues) — token-level streaming would read better for a real demo but
+   wasn't worth the extra risk under this session's time pressure.
+5. Multi-turn conversation isn't wired up yet — `runAgentTurn` takes a
+   `conversationId` and passes it through to Approval/AuditEvent records,
+   but each call to `query()` starts a fresh session; it doesn't resume
+   the SDK's own conversation state across turns yet, so the agent has no
+   memory of what it said earlier in the same browser session.
+6. Actual Railway deployment (see "Deploying to Railway" below) — still
+   needs Kasi's own dashboard setup.
 
 ## Known issues
+
+- **The live agent chat cannot run yet — `ANTHROPIC_API_KEY` in `.env` is
+  empty.** `/` (chat), `/pipeline`, and `/approvals` all build and serve
+  correctly; `/pipeline` and `/approvals` work fully right now (confirmed
+  rendering real seeded data with zero API key needed). `/` will error on
+  every message until a real key is set — the Agent SDK spawns a `claude`
+  subprocess that needs it. This is the single blocker for a full
+  end-to-end chat demo.
+- **Known architecture simplification**: true Agent Skills loading (the
+  SDK's `skills` option + `Skill` tool + progressive disclosure from
+  `skills/*/SKILL.md`) is NOT wired up, despite `skills/` having real
+  content now. Two reasons, both time-boxed decisions: (1) verifying the
+  SDK's exact skill-discovery path (project `skills/` vs `.claude/skills/`,
+  etc.) needed more time than was available before this demo; (2) it
+  conflicts with `tools: []` (disabling all built-in tools, including
+  `Skill`, to keep the agent scoped to only the 6 ERP tools). Current
+  workaround: `packages/agent/src/systemPrompt.ts` inlines a condensed
+  version of all 4 skills' procedural knowledge directly. This deviates
+  from the CLAUDE.md Layer 4 design ("thin system prompt; procedural
+  knowledge lives in skills") and should be revisited — the skill content
+  itself is real and complete, only the *loading mechanism* is a stand-in.
+- **Chat is not token-streamed.** `runAgentTurn` collects the whole
+  turn (text + tool calls + artifacts) and the API route returns it as one
+  JSON response, rather than streaming deltas to the browser. Simpler and
+  more robust to get right under time pressure; the tradeoff is the UI
+  shows "Agent is working…" rather than live token output.
+- **`execute_approved` idempotency guard is new and only lightly tested.**
+  `Approval.executedAt` prevents a double-click from re-running a write,
+  covered by one test — but this is exactly the kind of thing worth a
+  second look once there's more time (e.g. concurrent execute_approved
+  calls racing on the same Approval before the first `executedAt` write
+  lands — the current implementation is not wrapped in a single atomic
+  check-and-set transaction).
 
 - This sandbox's local Postgres (16, provisioned this session — role
   `fab_erp` / db `fab_erp`) does **not** persist across container restarts
@@ -100,6 +190,9 @@ repo. Not yet feature-complete.
   cwd, not the repo root — see the comment in `.env.example`). Same story
   for a second DB, `fab_erp_test` (role `fab_erp` also owns it), used by
   `pnpm --filter @fab-erp/core test` — see `packages/core/.env.test`.
+  `apps/web/.env` is also a symlink to the root `.env`, for the same
+  reason — Next.js only auto-loads `.env` files from the app directory,
+  not the monorepo root.
 - Production hosting target is **Railway** (see "Deploying to Railway"
   below) — chosen by Kasi mid-session, not evaluated against alternatives.
   Not yet actually deployed there; repo-side config (`railway.json`,
@@ -198,6 +291,29 @@ harness rule 4:
   than the more commonly-seen 3.x), Next 16.2 / React 19.2, TypeScript 5.9
   (not 6.0 — too recently released to trust broad tooling/plugin support
   yet, e.g. `@typescript-eslint`), Turborepo 2.10, Vitest 4.1.
+- **Which actions are `monetary: true` in the tool-layer action registry**
+  (`packages/tools/src/actions.ts`) was a judgment call, since CLAUDE.md's
+  "₹0 threshold" only says money-touching writes need approval, not which
+  of the 18 registered actions count. Money-touching (PENDING, needs
+  approval): `create_drawing_charge`, `invoice_drawing_charge`,
+  `mark_drawing_charge_paid`, `build_quote`, `revise_quote`,
+  `record_customer_po`, `record_payment`, `confirm_payment`. Everything
+  else (customer/inquiry/drawing/feasibility writes, plus
+  `waive_drawing_charge` — waiving removes a charge rather than creating
+  one) auto-approves. `mark_inquiry_lost` is non-monetary despite being a
+  real business outcome (losing a deal) — arguable either way; kept simple
+  per the literal "monetary" wording rather than expanding to
+  "significant" writes generally.
+- **`execute_approved` result-shaping is intentionally partial, not
+  exhaustive.** Only `Quote` → `quote_card`, `FeasibilityCheck` →
+  `feasibility_checklist`, and a job-bearing `Payment` result → `job_card`
+  are reshaped into proper artifacts (`packages/tools/src/tools.ts`,
+  `shapeArtifact`) — chosen because they're the three that matter for the
+  demo's golden path (quote a job, check feasibility, confirm an advance).
+  Customer/Inquiry/Drawing/CustomerPO/DrawingCharge results fall back to
+  labeled raw JSON in the UI. Worth extending once there's time, not
+  required for Phase 1 correctness (the underlying writes are correct
+  either way — this only affects how nicely the UI renders the result).
 
 ## How to run everything
 
@@ -206,15 +322,19 @@ harness rule 4:
 ```bash
 sudo service postgresql start   # this sandbox only — skip on a machine where it's already running
 pnpm install                    # also runs `prisma generate` (packages/core postinstall)
-cp .env.example .env             # then fill in DATABASE_URL / ANTHROPIC_API_KEY
+cp .env.example .env             # then fill in DATABASE_URL / ANTHROPIC_API_KEY (chat needs the real key)
 ln -sf ../../.env packages/core/.env   # Prisma needs .env next to where it's invoked from
+ln -sf ../../.env apps/web/.env         # Next.js only auto-loads .env from its own app dir
 pnpm db:migrate                  # first time / after schema changes — creates a shadow DB
 pnpm db:seed                     # ClientConfig + 2 vendors + 7 materials + 3 customers + 4 inquiries
 pnpm dev                          # starts apps/web + watches packages, http://localhost:3000
+# / = chat (needs ANTHROPIC_API_KEY) · /pipeline = read-only report views · /approvals = approval inbox
 
-# Tests (packages/core only, so far — real Postgres, not mocked):
+# Tests (real Postgres, not mocked, across core + tools):
 createdb -O fab_erp fab_erp_test   # one-time, plus GRANT — see packages/core/.env.test for the URL
+cp packages/core/.env.test packages/tools/.env.test   # same test DB, both packages need their own copy
 pnpm --filter @fab-erp/core test    # pretest applies migrations, then 44 integration tests run
+pnpm --filter @fab-erp/tools test   # 8 more (propose_transaction/execute_approved/hook)
 ```
 
 ### Deploying to Railway

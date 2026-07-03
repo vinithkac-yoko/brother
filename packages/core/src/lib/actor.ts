@@ -1,5 +1,5 @@
 import type { Actor, Role } from "@fab-erp/shared";
-import { PermissionError } from "./errors.js";
+import { PermissionError } from "./errors";
 
 // Real auth is out of scope for Phase 1 (stubbed roles only — see
 // CLAUDE.md). This is deliberately thin: a role-membership check for the

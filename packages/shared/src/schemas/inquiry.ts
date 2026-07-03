@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { lostReasonSchema } from "../enums.js";
+import { lostReasonSchema } from "../enums";
 
 export const createInquirySchema = z.object({
   customerId: z.string().min(1),

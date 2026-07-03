@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { truncateAllTables } from "../../lib/testHelpers.js";
-import { prisma } from "../../lib/prisma.js";
-import { completeFeasibilityCheck, createFeasibilityCheck } from "../feasibility.js";
-import { createInquiry } from "../inquiry.js";
-import { BusinessRuleError } from "../../lib/errors.js";
-import { adminActor, createTestCustomer } from "./factories.js";
+import { truncateAllTables } from "../../lib/testHelpers";
+import { prisma } from "../../lib/prisma";
+import { completeFeasibilityCheck, createFeasibilityCheck } from "../feasibility";
+import { createInquiry } from "../inquiry";
+import { BusinessRuleError } from "../../lib/errors";
+import { adminActor, createTestCustomer } from "./factories";
 
 beforeEach(async () => {
   await truncateAllTables();
